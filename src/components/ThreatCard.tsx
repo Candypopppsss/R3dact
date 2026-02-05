@@ -13,17 +13,6 @@ export default function ThreatCard({ result }: ThreatCardProps) {
     const [showDetails, setShowDetails] = useState(false);
     const { detection, reasoning, explanation } = result;
 
-    const getRiskColor = (riskLevel: string) => {
-        switch (riskLevel) {
-            case 'Critical': return '#dc2626';
-            case 'High': return '#f59e0b';
-            case 'Medium': return '#eab308';
-            case 'Low': return '#3b82f6';
-            case 'Safe': return '#10b981';
-            default: return '#6b7280';
-        }
-    };
-
     const getRiskGradient = (riskLevel: string) => {
         switch (riskLevel) {
             case 'Critical': return 'linear-gradient(135deg, #dc2626, #991b1b)';

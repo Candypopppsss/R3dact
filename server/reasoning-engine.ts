@@ -1,4 +1,4 @@
-import { DetectionResult, Indicator } from './detection-engine.js';
+import { DetectionResult } from './detection-engine.js';
 
 export interface ReasoningResult {
     attackerIntent: IntentAnalysis[];

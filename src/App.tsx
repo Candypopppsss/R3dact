@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './index.css';
 import AnalysisPanel from './components/AnalysisPanel';
 import HistoryDashboard from './components/HistoryDashboard';

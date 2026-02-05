@@ -60,7 +60,7 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 // Get attack history
-app.get('/api/history', async (req, res) => {
+app.get('/api/history', async (_req, res) => {
     try {
         const attacks = await database.getAllAttacks();
 
@@ -78,7 +78,7 @@ app.get('/api/history', async (req, res) => {
 });
 
 // Get statistics
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats', async (_req, res) => {
     try {
         const stats = await database.getStats();
         res.json(stats);
@@ -106,7 +106,7 @@ app.delete('/api/history/:id', async (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

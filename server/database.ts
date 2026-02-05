@@ -86,9 +86,9 @@ class DatabaseManager {
         const columns = result[0].columns;
         const values = result[0].values;
 
-        return values.map(row => {
+        return values.map((row: any[]) => {
             const record: any = {};
-            columns.forEach((col, idx) => {
+            columns.forEach((col: string, idx: number) => {
                 record[col] = row[idx];
             });
             return record as AttackRecord;
@@ -107,7 +107,7 @@ class DatabaseManager {
         const row = result[0].values[0];
         const record: any = {};
 
-        columns.forEach((col, idx) => {
+        columns.forEach((col: string, idx: number) => {
             record[col] = row[idx];
         });
 

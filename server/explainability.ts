@@ -1,4 +1,4 @@
-import { DetectionResult, Indicator } from './detection-engine.js';
+import { DetectionResult } from './detection-engine.js';
 import { ReasoningResult } from './reasoning-engine.js';
 
 export interface Explanation {
