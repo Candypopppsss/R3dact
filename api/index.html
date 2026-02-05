@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R3dact | AI Security Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: rgba(23, 23, 26, 0.7);
+            --primary: #ef4444;
+            --accent: #f87171;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(248, 113, 113, 0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            margin-bottom: 20px;
+            animation: pulse 4s infinite ease-in-out;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            background: linear-gradient(to right, #f87171, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .input-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-main);
+            font-size: 1rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        button {
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        #results {
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 20px;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .explanation {
+            line-height: 1.6;
+            color: var(--text-main);
+            white-space: pre-wrap;
+            font-size: 0.95rem;
+        }
+
+        .explanation strong {
+            color: var(--accent);
+        }
+
+        .explanation h3,
+        .explanation h4 {
+            margin: 24px 0 12px 0;
+            font-size: 1.1rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .example-chips {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 99px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+
+        .chip:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .loader {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.2));
+            }
+
+            50% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.4));
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .metric-value {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <svg width="80" height="92" viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M40 0L74.641 20V60L40 80L5.35898 60V20L40 0Z" fill="#ef4444" />
+                    <path d="M40 10L65.9808 25V55L40 70L14.0192 55V25L40 10Z" fill="#0a0a0c" />
+                    <path d="M40 20L57.3205 30V50L40 60L22.6795 50V30L40 20Z" fill="#ef4444" />
+                </svg>
+            </div>
+            <h1>R3dact</h1>
+            <p class="subtitle">Advanced AI Security Detection</p>
+        </header>
+
+        <main>
+            <div class="input-card">
+                <textarea id="textInput" placeholder="Paste a suspicious email, message, or URL here..."></textarea>
+                <div class="example-chips">
+                    <span class="chip"
+                        data-text="URGENT: Microsoft Security Alert! Your account will be locked in 1 hour if you do not verify your login password immediately.">Urgent
+                        Phishing</span>
+                    <span class="chip"
+                        data-text="Congratulations! You have won a $500 Amazon Gift Card. Click here to claim your reward before it expires.">Reward
+                        Scam</span>
+                    <span class="chip"
+                        data-text="Hey, are we still meeting for lunch today? Let me know if you need any directions!">Safe
+                        Message</span>
+                </div>
+                <div class="controls" style="margin-top: 24px; align-items: center;">
+                    <div id="loader" class="loader"></div>
+                    <button class="btn-primary" id="analyzeBtn">Analyze Threat</button>
+                    <button class="btn-secondary" id="clearBtn">Clear</button>
+                </div>
+            </div>
+
+            <div id="results">
+                <div class="result-card">
+                    <div class="result-header">
+                        <div style="display: flex; gap: 40px;">
+                            <div class="metric">
+                                <span class="metric-label">Risk Score</span>
+                                <span class="metric-value" id="resScore">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Likelihood</span>
+                                <span class="metric-value" id="resVuln">--</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="resBadge" class="badge">Checking...</div>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-muted);" id="resAction">
+                                Action Pending</div>
+                        </div>
+                    </div>
+
+                    <div id="resExplanation" class="explanation"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const results = document.getElementById('results');
+        const loader = document.getElementById('loader');
+
+        const elements = {
+            score: document.getElementById('resScore'),
+            vuln: document.getElementById('resVuln'),
+            badge: document.getElementById('resBadge'),
+            action: document.getElementById('resAction'),
+            explanation: document.getElementById('resExplanation')
+        };
+
+        analyzeBtn.addEventListener('click', async () => {
+            const text = textInput.value;
+            if (!text || text.length < 5) {
+                alert('Please enter a longer message to analyze.');
+                return;
+            }
+
+            analyzeBtn.disabled = true;
+            loader.style.display = 'block';
+            results.style.display = 'none';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) throw new Error('Failed to analyze');
+
+                const data = await response.json();
+                renderResults(data);
+            } catch (error) {
+                alert('Connection to R3dact Agent failed. Ensure the server is running.');
+                console.error(error);
+            } finally {
+                analyzeBtn.disabled = false;
+                loader.style.display = 'none';
+            }
+        });
+
+        function renderResults(data) {
+            elements.score.textContent = data.risk_score + '%';
+            elements.vuln.textContent = data.vulnerability_assessment.rating;
+            elements.action.textContent = 'Agent Action: ' + data.agent_decision;
+
+            // Format Badge
+            elements.badge.textContent = data.classification;
+            elements.badge.className = 'badge';
+            if (data.classification === 'Phishing') elements.badge.classList.add('badge-danger');
+            else if (data.classification === 'Suspicious') elements.badge.classList.add('badge-warning');
+            else elements.badge.classList.add('badge-success');
+
+            // Rich markdown-like formatting
+            let html = data.explanation
+                .replace(/### (.*?)\n/g, '<h3>$1</h3>')
+                .replace(/#### (.*?)\n/g, '<h4>$1</h4>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/• (.*?)\n/g, '• $1<br/>');
+
+            elements.explanation.innerHTML = html;
+            results.style.display = 'block';
+        }
+
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            results.style.display = 'none';
+        });
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                textInput.value = chip.getAttribute('data-text');
+                analyzeBtn.click();
+            });
+        });
+    </script>
+</body>
+
+</html>
