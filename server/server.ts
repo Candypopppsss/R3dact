@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import { detectionEngine } from './detection-engine';
-import { reasoningEngine } from './reasoning-engine';
-import { explainabilityEngine } from './explainability';
-import { database } from './database';
+import { detectionEngine } from './detection-engine.js';
+import { reasoningEngine } from './reasoning-engine.js';
+import { explainabilityEngine } from './explainability.js';
+import { database } from './database.js';
 
 const app = express();
 const PORT = 3000;
