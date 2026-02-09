@@ -15,11 +15,7 @@ function App() {
         <div className="app">
             <header className="app-header" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
                 <div className="logo-container" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>
-                    <svg width="64" height="74" viewBox="0 0 80 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M40 0L74.641 20V60L40 80L5.35898 60V20L40 0Z" fill="#ef4444" />
-                        <path d="M40 10L65.9808 25V55L40 70L14.0192 55V25L40 10Z" fill="#0B0B0E" />
-                        <path d="M40 20L57.3205 30V50L40 60L22.6795 50V30L40 20Z" fill="#ef4444" />
-                    </svg>
+                    <img src="/logo.svg" alt="R3dact Logo" style={{ width: '80px', height: '80px' }} />
                 </div>
                 <h1 className="app-title" style={{
                     fontSize: '3.5rem',
