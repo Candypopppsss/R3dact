@@ -1,10 +1,57 @@
 import { useState } from 'react';
 
+// --- Type Definitions for API Response ---
+interface Indicator {
+    type: string;
+    severity: 'high' | 'medium' | 'low';
+    description: string;
+    evidence?: string;
+}
+
+interface DetectionResult {
+    isPhishing: boolean;
+    threatScore: number;
+    indicators: Indicator[];
+    category: 'url' | 'email' | 'message';
+}
+
+interface IntentAnalysis {
+    intent: string;
+    confidence: number;
+    reasoning: string;
+}
+
+interface VulnerabilityAnalysis {
+    trigger: string;
+    description: string;
+    severity: 'high' | 'medium' | 'low';
+}
+
+interface ReasoningResult {
+    attackerIntent: IntentAnalysis[];
+    vulnerabilities: VulnerabilityAnalysis[];
+    confidence: number;
+    attackType: string;
+}
+
+interface TechnicalDetail {
+    category: string;
+    findings: string[];
+}
+
+interface Explanation {
+    summary: string;
+    riskLevel: 'Critical' | 'High' | 'Medium' | 'Low' | 'Safe';
+    detailedAnalysis: string[];
+    recommendations: string[];
+    technicalDetails: TechnicalDetail[];
+}
+
 interface ThreatCardProps {
     result: {
-        detection: any;
-        reasoning: any;
-        explanation: any;
+        detection: DetectionResult;
+        reasoning: ReasoningResult;
+        explanation: Explanation;
         timestamp: string;
     };
 }
@@ -14,18 +61,32 @@ export default function ThreatCard({ result }: ThreatCardProps) {
     const { detection, reasoning, explanation } = result;
 
     const getRiskGradient = (riskLevel: string) => {
-        switch (riskLevel) {
-            case 'Critical': return 'linear-gradient(135deg, #dc2626, #991b1b)';
-            case 'High': return 'linear-gradient(135deg, #f59e0b, #d97706)';
-            case 'Medium': return 'linear-gradient(135deg, #eab308, #ca8a04)';
-            case 'Low': return 'linear-gradient(135deg, #3b82f6, #2563eb)';
-            case 'Safe': return 'linear-gradient(135deg, #10b981, #059669)';
+        const level = riskLevel?.toLowerCase();
+        switch (level) {
+            case 'critical': return 'linear-gradient(135deg, #dc2626, #991b1b)';
+            case 'high': return 'linear-gradient(135deg, #f59e0b, #d97706)';
+            case 'medium': return 'linear-gradient(135deg, #eab308, #ca8a04)';
+            case 'low': return 'linear-gradient(135deg, #3b82f6, #2563eb)';
+            case 'safe': return 'linear-gradient(135deg, #10b981, #059669)';
             default: return 'linear-gradient(135deg, #6b7280, #4b5563)';
         }
     };
 
+    /**
+     * Safely formats the markdown-like summary into HTML.
+     * Handles missing trailing newlines and different platform line breaks.
+     */
+    const formatSummary = (summary: string) => {
+        if (!summary) return "";
+        return summary
+            .replace(/### (.*?)(?:\n|\r\n|$)/g, '<h4 style="margin: 1.25rem 0 0.5rem 0; color: var(--accent-cyan); font-weight: 700;">$1</h4>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--text-primary);">$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em style="color: var(--text-secondary);">$1</em>')
+            .replace(/• (.*?)(?:\n|\r\n|$)/g, '<div style="margin-bottom: 0.25rem;">• $1</div>');
+    };
+
     return (
-        <div className="card" style={{ animation: 'fadeIn 0.4s ease' }}>
+        <div className="card" style={{ animation: 'fadeIn 0.4s ease', position: 'relative', overflow: 'hidden' }}>
             {/* Header with Threat Score */}
             <div style={{
                 display: 'flex',
@@ -36,93 +97,100 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                 gap: '1rem'
             }}>
                 <div>
-                    <h2 style={{ margin: 0, marginBottom: '0.5rem' }}>Analysis Results</h2>
-                    <span className={`badge badge-${explanation.riskLevel.toLowerCase()}`}>
-                        {explanation.riskLevel} Risk
-                    </span>
+                    <h2 style={{ margin: 0, marginBottom: '0.5rem', fontSize: '1.5rem' }}>Analysis Results</h2>
+                    {explanation?.riskLevel && (
+                        <span className={`badge badge-${explanation.riskLevel.toLowerCase()}`}>
+                            {explanation.riskLevel} Risk
+                        </span>
+                    )}
                 </div>
                 <div style={{
-                    background: getRiskGradient(explanation.riskLevel),
-                    padding: '1.5rem',
+                    background: getRiskGradient(explanation?.riskLevel),
+                    padding: '1.25rem',
                     borderRadius: '1rem',
                     textAlign: 'center',
-                    minWidth: '150px',
-                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)'
+                    minWidth: '140px',
+                    boxShadow: 'var(--shadow-md)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'white' }}>
-                        {detection.threatScore}
+                    <div style={{ fontSize: '2.5rem', fontWeight: '800', color: 'white', lineHeight: 1 }}>
+                        {detection?.threatScore ?? 0}
                     </div>
-                    <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.9)', marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.8)', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600' }}>
                         Threat Score
                     </div>
                 </div>
             </div>
 
-            {/* Summary */}
-            <div style={{
-                padding: '1rem',
-                background: 'rgba(6, 182, 212, 0.1)',
-                borderLeft: '4px solid var(--accent-cyan)',
-                borderRadius: '0.5rem',
-                marginBottom: '1.5rem'
-            }}>
-                <div
-                    style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}
-                    dangerouslySetInnerHTML={{
-                        __html: explanation.summary
-                            .replace(/### (.*?)\n/g, '<h4 style="margin: 1rem 0 0.5rem 0; color: var(--accent-cyan);">$1</h4>')
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                            .replace(/• (.*?)\n/g, '• $1<br/>')
-                    }}
-                />
-            </div>
-
-            {/* Attack Type */}
-            <div style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--accent-cyan)' }}>
-                    Attack Classification
-                </h3>
+            {/* Summary Layer */}
+            {explanation?.summary && (
                 <div style={{
-                    display: 'inline-block',
-                    padding: '0.5rem 1rem',
-                    background: 'var(--bg-tertiary)',
+                    padding: '1.25rem',
+                    background: 'rgba(6, 182, 212, 0.05)',
+                    borderLeft: '4px solid var(--accent-cyan)',
                     borderRadius: '0.5rem',
-                    border: '1px solid var(--border-color)'
+                    marginBottom: '1.5rem',
+                    border: '1px solid rgba(6, 182, 212, 0.1)'
                 }}>
-                    <strong>{reasoning.attackType}</strong>
+                    <div
+                        style={{ margin: 0, fontSize: '1rem', lineHeight: 1.7, color: 'var(--text-secondary)' }}
+                        dangerouslySetInnerHTML={{ __html: formatSummary(explanation.summary) }}
+                    />
                 </div>
-            </div>
+            )}
+
+            {/* Attack Classification */}
+            {reasoning?.attackType && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-cyan)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Attack Classification
+                    </h3>
+                    <div style={{
+                        display: 'inline-block',
+                        padding: '0.6rem 1.25rem',
+                        background: 'var(--bg-tertiary)',
+                        borderRadius: '0.5rem',
+                        border: '1px solid var(--border-color)',
+                        fontWeight: '600',
+                        fontSize: '0.95rem'
+                    }}>
+                        {reasoning.attackType}
+                    </div>
+                </div>
+            )}
 
             {/* Attacker Intent */}
-            {reasoning.attackerIntent && reasoning.attackerIntent.length > 0 && (
+            {reasoning?.attackerIntent && reasoning.attackerIntent.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--accent-purple)' }}>
+                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Attacker Intent
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {reasoning.attackerIntent.map((intent: any, idx: number) => (
+                        {reasoning.attackerIntent.map((intent, idx) => (
                             <div
                                 key={idx}
                                 style={{
                                     padding: '1rem',
                                     background: 'var(--bg-tertiary)',
                                     borderRadius: '0.75rem',
-                                    border: '1px solid var(--border-color)'
+                                    border: '1px solid var(--border-color)',
+                                    transition: 'background 0.2s ease'
                                 }}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                                     <strong style={{ color: 'var(--accent-purple)' }}>{intent.intent}</strong>
                                     <span style={{
-                                        padding: '0.25rem 0.75rem',
-                                        background: 'rgba(168, 85, 247, 0.2)',
-                                        borderRadius: '1rem',
-                                        fontSize: '0.875rem'
+                                        padding: '0.2rem 0.6rem',
+                                        background: 'rgba(168, 85, 247, 0.15)',
+                                        color: 'var(--accent-purple)',
+                                        borderRadius: '0.5rem',
+                                        fontSize: '0.75rem',
+                                        fontWeight: '700'
                                     }}>
                                         {intent.confidence}% confidence
                                     </span>
                                 </div>
-                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
                                     {intent.reasoning}
                                 </p>
                             </div>
@@ -131,14 +199,14 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                 </div>
             )}
 
-            {/* Vulnerabilities */}
-            {reasoning.vulnerabilities && reasoning.vulnerabilities.length > 0 && (
+            {/* Psychological Tactics */}
+            {reasoning?.vulnerabilities && reasoning.vulnerabilities.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--accent-pink)' }}>
+                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-pink)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Psychological Tactics
                     </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '0.75rem' }}>
-                        {reasoning.vulnerabilities.map((vuln: any, idx: number) => (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
+                        {reasoning.vulnerabilities.map((vuln, idx) => (
                             <div
                                 key={idx}
                                 style={{
@@ -146,15 +214,15 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                                     background: 'var(--bg-tertiary)',
                                     borderRadius: '0.75rem',
                                     border: '1px solid var(--border-color)',
-                                    borderLeft: `4px solid ${vuln.severity === 'high' ? '#ef4444' :
-                                        vuln.severity === 'medium' ? '#f59e0b' : '#3b82f6'
+                                    borderLeft: `4px solid ${vuln.severity === 'high' ? 'var(--accent-red)' :
+                                        vuln.severity === 'medium' ? 'var(--accent-yellow)' : 'var(--accent-cyan)'
                                         }`
                                 }}
                             >
-                                <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--accent-pink)' }}>
+                                <div style={{ fontWeight: '700', marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '0.95rem' }}>
                                     {vuln.trigger}
                                 </div>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                                     {vuln.description}
                                 </p>
                             </div>
@@ -163,57 +231,66 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                 </div>
             )}
 
-            {/* Recommendations */}
-            {explanation.recommendations && explanation.recommendations.length > 0 && (
+            {/* Recommendations Section */}
+            {explanation?.recommendations && explanation.recommendations.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--accent-green)' }}>
-                        Recommendations
+                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Security Recommendations
                     </h3>
-                    <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {explanation.recommendations.map((rec: string, idx: number) => (
-                            <li key={idx} style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                                {rec}
-                            </li>
-                        ))}
-                    </ul>
+                    <div style={{
+                        padding: '1rem',
+                        background: 'rgba(16, 185, 129, 0.05)',
+                        borderRadius: '0.75rem',
+                        border: '1px solid rgba(16, 185, 129, 0.1)'
+                    }}>
+                        <ul style={{ margin: 0, paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            {explanation.recommendations.map((rec, idx) => (
+                                <li key={idx} style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                                    <div dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--accent-green);">$1</strong>') }} />
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             )}
 
-            {/* Toggle Details Button */}
+            {/* Action Buttons */}
             <button
-                className="btn btn-secondary"
+                className={`btn ${showDetails ? 'btn-secondary' : 'btn-primary'}`}
                 onClick={() => setShowDetails(!showDetails)}
-                style={{ width: '100%', marginTop: '1rem' }}
+                style={{ width: '100%', justifyContent: 'center', marginTop: '0.5rem' }}
             >
-                {showDetails ? '▲ Hide' : '▼ Show'} Technical Details
+                {showDetails ? 'Hide' : 'Show'} Technical Analysis
             </button>
 
-            {/* Technical Details */}
+            {/* Technical Details (Accordion Content) */}
             {showDetails && (
                 <div style={{
-                    marginTop: '1.5rem',
+                    marginTop: '1.25rem',
                     padding: '1.5rem',
                     background: 'var(--bg-tertiary)',
                     borderRadius: '0.75rem',
                     border: '1px solid var(--border-color)',
-                    animation: 'fadeIn 0.3s ease'
+                    animation: 'fadeInUp 0.3s ease',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
                 }}>
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--accent-cyan)' }}>
-                        Technical Analysis
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+                        Full Diagnostic Data
                     </h3>
 
-                    {explanation.technicalDetails.map((detail: any, idx: number) => (
+                    {explanation?.technicalDetails?.map((detail, idx) => (
                         <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                            <h4 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
+                            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--accent-cyan)', textTransform: 'uppercase' }}>
                                 {detail.category}
                             </h4>
-                            <ul style={{ margin: 0, paddingLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                {detail.findings.map((finding: string, findingIdx: number) => (
+                            <ul style={{ margin: 0, paddingLeft: '1.25rem', listStyleType: 'square' }}>
+                                {detail.findings?.map((finding, findingIdx) => (
                                     <li key={findingIdx} style={{
-                                        color: 'var(--text-secondary)',
-                                        fontSize: '0.95rem',
+                                        color: 'var(--text-tertiary)',
+                                        fontSize: '0.85rem',
                                         lineHeight: 1.6,
-                                        fontFamily: 'Consolas, Monaco, monospace'
+                                        marginBottom: '0.4rem',
+                                        fontFamily: 'var(--font-mono, monospace)'
                                     }}>
                                         {finding}
                                     </li>
@@ -226,3 +303,4 @@ export default function ThreatCard({ result }: ThreatCardProps) {
         </div>
     );
 }
+
