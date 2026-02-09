@@ -49,9 +49,12 @@ app.post('/api/analyze', async (req, res) => {
         }
 
         res.json(result);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Analysis error:', error);
-        res.status(500).json({ error: 'Analysis failed' });
+        res.status(500).json({
+            error: error.message || 'Analysis failed',
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
@@ -67,9 +70,9 @@ app.get('/api/history', async (_req, res) => {
         }));
 
         res.json(enrichedAttacks);
-    } catch (error) {
+    } catch (error: any) {
         console.error('History retrieval error:', error);
-        res.status(500).json({ error: 'Failed to retrieve history' });
+        res.status(500).json({ error: error.message || 'Failed to retrieve history' });
     }
 });
 
@@ -78,9 +81,9 @@ app.get('/api/stats', async (_req, res) => {
     try {
         const stats = await database.getStats();
         res.json(stats);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Stats retrieval error:', error);
-        res.status(500).json({ error: 'Failed to retrieve stats' });
+        res.status(500).json({ error: error.message || 'Failed to retrieve stats' });
     }
 });
 
@@ -95,9 +98,9 @@ app.delete('/api/history/:id', async (req, res) => {
         } else {
             res.status(404).json({ error: 'Attack record not found' });
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Delete error:', error);
-        res.status(500).json({ error: 'Failed to delete record' });
+        res.status(500).json({ error: error.message || 'Failed to delete record' });
     }
 });
 
