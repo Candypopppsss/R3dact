@@ -1,10 +1,10 @@
-import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+import initSqlJs from 'sql.js';
+import type { Database } from 'sql.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface AttackRecord {
     id?: number;
@@ -16,7 +16,7 @@ export interface AttackRecord {
 }
 
 class DatabaseManager {
-    private db: SqlJsDatabase | null = null;
+    private db: Database | null = null;
     private dbPath: string;
     private initialized = false;
 
