@@ -5,10 +5,29 @@ interface AnalysisPanelProps {
     onAnalysisComplete?: () => void;
 }
 
+interface DetectionResult {
+    threatScore: number;
+    isPhishing?: boolean;
+    category?: 'url' | 'email' | 'message';
+}
+
+interface ReasoningResult {
+    attackType: string;
+    attackerIntent: Array<{ intent: string; confidence: number; reasoning: string }>;
+    vulnerabilities: Array<{ trigger: string; description: string; severity: 'high' | 'medium' | 'low' }>;
+}
+
+interface Explanation {
+    riskLevel: 'Critical' | 'High' | 'Medium' | 'Low' | 'Safe';
+    summary: string;
+    recommendations?: string[];
+    technicalDetails?: Array<{ category: string; findings: string[] }>;
+}
+
 interface AnalysisResult {
-    detection: any;
-    reasoning: any;
-    explanation: any;
+    detection: DetectionResult;
+    reasoning: ReasoningResult;
+    explanation: Explanation;
     timestamp: string;
 }
 
@@ -54,12 +73,12 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
                     vulnerabilities: data.vulnerability_assessment.triggers.map((t: string) => ({
                         trigger: t,
                         description: `This attack leverages ${t} to manipulate human behavior.`,
-                        severity: data.vulnerability_assessment.rating.toLowerCase()
+                        severity: data.vulnerability_assessment.rating.toLowerCase() as 'high' | 'medium' | 'low'
                     }))
                 },
                 explanation: {
-                    riskLevel: data.classification === 'Phishing' ? 'Critical' :
-                        data.classification === 'Suspicious' ? 'High' : 'Safe',
+                    riskLevel: (data.classification === 'Phishing' ? 'Critical' :
+                        data.classification === 'Suspicious' ? 'High' : 'Safe') as 'Critical' | 'High' | 'Medium' | 'Low' | 'Safe',
                     summary: data.explanation,
                     recommendations: [
                         "Do not interact with or click any links in this content.",

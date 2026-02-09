@@ -9,10 +9,10 @@ interface Indicator {
 }
 
 interface DetectionResult {
-    isPhishing: boolean;
     threatScore: number;
-    indicators: Indicator[];
-    category: 'url' | 'email' | 'message';
+    isPhishing?: boolean;
+    indicators?: Indicator[];
+    category?: 'url' | 'email' | 'message';
 }
 
 interface IntentAnalysis {
@@ -24,14 +24,14 @@ interface IntentAnalysis {
 interface VulnerabilityAnalysis {
     trigger: string;
     description: string;
-    severity: 'high' | 'medium' | 'low';
+    severity?: 'high' | 'medium' | 'low';
 }
 
 interface ReasoningResult {
-    attackerIntent: IntentAnalysis[];
-    vulnerabilities: VulnerabilityAnalysis[];
-    confidence: number;
     attackType: string;
+    attackerIntent?: IntentAnalysis[];
+    vulnerabilities?: VulnerabilityAnalysis[];
+    confidence?: number;
 }
 
 interface TechnicalDetail {
@@ -42,9 +42,9 @@ interface TechnicalDetail {
 interface Explanation {
     summary: string;
     riskLevel: 'Critical' | 'High' | 'Medium' | 'Low' | 'Safe';
-    detailedAnalysis: string[];
-    recommendations: string[];
-    technicalDetails: TechnicalDetail[];
+    detailedAnalysis?: string[];
+    recommendations?: string[];
+    technicalDetails?: TechnicalDetail[];
 }
 
 interface ThreatCardProps {
@@ -105,7 +105,7 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                     )}
                 </div>
                 <div style={{
-                    background: getRiskGradient(explanation?.riskLevel),
+                    background: getRiskGradient(explanation?.riskLevel || 'safe'),
                     padding: '1.25rem',
                     borderRadius: '1rem',
                     textAlign: 'center',

@@ -10,7 +10,7 @@ interface AttackRecord {
     type: string;
     content: string;
     threat_score: number;
-    analysis_result: {
+    analysis_result?: {
         attackType: string;
         riskLevel: string;
         indicators: number;
@@ -80,7 +80,8 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
         });
     };
 
-    const getRiskBadgeClass = (riskLevel: string) => {
+    const getRiskBadgeClass = (riskLevel?: string) => {
+        if (!riskLevel) return 'badge badge-safe';
         return `badge badge-${riskLevel.toLowerCase()}`;
     };
 
@@ -177,8 +178,8 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             gap: '0.75rem',
                                             marginBottom: '0.75rem'
                                         }}>
-                                            <span className={getRiskBadgeClass(attack.analysis_result.riskLevel)}>
-                                                {attack.analysis_result.riskLevel}
+                                            <span className={getRiskBadgeClass(attack.analysis_result?.riskLevel)}>
+                                                {attack.analysis_result?.riskLevel ?? 'Unknown'}
                                             </span>
                                             <span style={{
                                                 padding: '0.25rem 0.75rem',
@@ -187,7 +188,7 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                                 fontSize: '0.875rem',
                                                 color: 'var(--text-secondary)'
                                             }}>
-                                                {attack.type.toUpperCase()}
+                                                {attack.type?.toUpperCase() ?? 'UNKNOWN'}
                                             </span>
                                             <span style={{
                                                 fontSize: '0.875rem',
@@ -203,7 +204,7 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             marginBottom: '0.5rem',
                                             color: 'var(--accent-purple)'
                                         }}>
-                                            {attack.analysis_result.attackType}
+                                            {attack.analysis_result?.attackType ?? 'Generic Attack'}
                                         </div>
 
                                         <div style={{
@@ -226,7 +227,7 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             fontSize: '0.875rem',
                                             color: 'var(--text-tertiary)'
                                         }}>
-                                            {attack.analysis_result.indicators} indicator{attack.analysis_result.indicators !== 1 ? 's' : ''} detected
+                                            {attack.analysis_result?.indicators ?? 0} indicator{(attack.analysis_result?.indicators ?? 0) !== 1 ? 's' : ''} detected
                                         </div>
                                     </div>
 
