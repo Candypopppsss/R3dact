@@ -106,9 +106,12 @@ app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.listen(PORT, () => {
-    console.log(`AI Security Server running on http://localhost:${PORT}`);
-    console.log(`API endpoints available at http://localhost:${PORT}/api`);
-});
+// Only start the server if not running in Vercel or if explicitly running locally
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`AI Security Server running on http://localhost:${PORT}`);
+        console.log(`API endpoints available at http://localhost:${PORT}/api`);
+    });
+}
 
 export default app;

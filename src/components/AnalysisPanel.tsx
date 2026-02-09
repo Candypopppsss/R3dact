@@ -55,7 +55,8 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
             });
 
             if (!response.ok) {
-                throw new Error('Analysis failed');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Analysis failed with status ${response.status}`);
             }
 
             const data: AnalysisResult = await response.json();
@@ -65,9 +66,9 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
             if (onAnalysisComplete) {
                 onAnalysisComplete();
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Analysis error:', error);
-            alert('Failed to connect to the AI Security Agent. Please ensure the backend is running.');
+            alert(`Backend Error: ${error.message}\n\nThis usually happens if the backend is not correctly configured on Vercel or the database initialization failed.`);
         } finally {
             setLoading(false);
         }
