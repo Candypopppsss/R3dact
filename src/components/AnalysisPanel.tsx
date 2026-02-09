@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDatabase } from '../context/DatabaseContext';
 import ThreatCard from './ThreatCard';
 
 interface AnalysisPanelProps {
@@ -32,6 +33,7 @@ interface AnalysisResult {
 }
 
 export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps) {
+    const { db } = useDatabase();
     const [input, setInput] = useState('');
     const [inputType, setInputType] = useState<'url' | 'email' | 'message'>('url');
     const [loading, setLoading] = useState(false);
@@ -62,6 +64,17 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
             const data: AnalysisResult = await response.json();
 
             setResult(data);
+
+            // Save to client-side database if it's a threat
+            if (data.detection.threatScore >= 20) {
+                await db.saveAttack({
+                    timestamp: data.timestamp,
+                    type: data.detection.category || 'message',
+                    content: input.substring(0, 500),
+                    threat_score: data.detection.threatScore,
+                    analysis_result: data
+                });
+            }
 
             if (onAnalysisComplete) {
                 onAnalysisComplete();

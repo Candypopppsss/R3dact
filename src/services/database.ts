@@ -1,10 +1,5 @@
 import initSqlJs from 'sql.js';
 import type { Database } from 'sql.js';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface AttackRecord {
     id?: number;
@@ -12,42 +7,25 @@ export interface AttackRecord {
     type: string;
     content: string;
     threat_score: number;
-    analysis_result: string;
+    analysis_result: any;
 }
 
-class DatabaseManager {
+class ClientDatabaseManager {
     private db: Database | null = null;
-    private dbPath: string;
     private initialized = false;
-
-    constructor() {
-        // Vercel serverless environment has a read-only filesystem except for /tmp
-        this.dbPath = process.env.VERCEL ? '/tmp/attacks.db' : join(__dirname, '..', 'attacks.db');
-    }
 
     async initialize() {
         if (this.initialized) return;
 
         try {
             const SQL = await initSqlJs({
-                // Use CDN for Wasm to ensure it works in serverless environments
+                // Use CDN for Wasm to ensure it works in all environments
                 locateFile: (file: string) => `https://sql.js.org/dist/${file}`
             });
 
-            // Load existing database or create new one
-            if (existsSync(this.dbPath)) {
-                try {
-                    const buffer = readFileSync(this.dbPath);
-                    this.db = new SQL.Database(buffer);
-                } catch (readError) {
-                    console.error('Failed to read database file, creating new one:', readError);
-                    this.db = new SQL.Database();
-                }
-            } else {
-                this.db = new SQL.Database();
-            }
+            this.db = new SQL.Database();
 
-            // Create table if it doesn't exist
+            // Create table
             this.db.run(`
                 CREATE TABLE IF NOT EXISTS attacks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,33 +37,31 @@ class DatabaseManager {
                 )
             `);
 
-            this.save();
             this.initialized = true;
-        } catch (initError: any) {
-            console.error('Database initialization failed:', initError);
-            throw new Error(`Database Initialization Error: ${initError.message}`);
+            console.log('Client-side database initialized');
+        } catch (error) {
+            console.error('Failed to initialize client-side database:', error);
+            throw error;
         }
     }
 
-    private save() {
-        if (!this.db) return;
-        const data = this.db.export();
-        writeFileSync(this.dbPath, data);
-    }
-
-    async saveAttack(record: AttackRecord): Promise<number> {
+    async saveAttack(record: Omit<AttackRecord, 'id'>): Promise<number> {
         await this.initialize();
         if (!this.db) throw new Error('Database not initialized');
 
         this.db.run(
             `INSERT INTO attacks (timestamp, type, content, threat_score, analysis_result)
-       VALUES (?, ?, ?, ?, ?)`,
-            [record.timestamp, record.type, record.content, record.threat_score, record.analysis_result]
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+                record.timestamp,
+                record.type,
+                record.content,
+                record.threat_score,
+                JSON.stringify(record.analysis_result)
+            ]
         );
 
         const result = this.db.exec('SELECT last_insert_rowid() as id');
-        this.save();
-
         return result[0].values[0][0] as number;
     }
 
@@ -103,29 +79,14 @@ class DatabaseManager {
         return values.map((row: any[]) => {
             const record: any = {};
             columns.forEach((col: string, idx: number) => {
-                record[col] = row[idx];
+                if (col === 'analysis_result') {
+                    record[col] = JSON.parse(row[idx]);
+                } else {
+                    record[col] = row[idx];
+                }
             });
             return record as AttackRecord;
         });
-    }
-
-    async getAttackById(id: number): Promise<AttackRecord | undefined> {
-        await this.initialize();
-        if (!this.db) throw new Error('Database not initialized');
-
-        const result = this.db.exec('SELECT * FROM attacks WHERE id = ?', [id]);
-
-        if (result.length === 0 || result[0].values.length === 0) return undefined;
-
-        const columns = result[0].columns;
-        const row = result[0].values[0];
-        const record: any = {};
-
-        columns.forEach((col: string, idx: number) => {
-            record[col] = row[idx];
-        });
-
-        return record as AttackRecord;
     }
 
     async deleteAttack(id: number): Promise<boolean> {
@@ -133,8 +94,6 @@ class DatabaseManager {
         if (!this.db) throw new Error('Database not initialized');
 
         this.db.run('DELETE FROM attacks WHERE id = ?', [id]);
-        this.save();
-
         return true;
     }
 
@@ -156,13 +115,6 @@ class DatabaseManager {
             highThreatCount: high as number,
         };
     }
-
-    close() {
-        if (this.db) {
-            this.save();
-            this.db.close();
-        }
-    }
 }
 
-export const database = new DatabaseManager();
+export const clientDatabase = new ClientDatabaseManager();

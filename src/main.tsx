@@ -2,9 +2,12 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
+import { DatabaseProvider } from './context/DatabaseContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <App />
+        <DatabaseProvider>
+            <App />
+        </DatabaseProvider>
     </React.StrictMode>,
 )
