@@ -60,6 +60,9 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                 const statsData = await statsRes.json();
                 setAttacks(historyData);
                 setStats(statsData);
+            } else {
+                const errorMsg = !historyRes.ok ? `History failed (${historyRes.status})` : `Stats failed (${statsRes.status})`;
+                throw new Error(errorMsg);
             }
         } catch (error) {
             console.error('Failed to fetch data:', error);

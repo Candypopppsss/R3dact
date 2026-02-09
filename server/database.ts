@@ -28,30 +28,43 @@ class DatabaseManager {
     async initialize() {
         if (this.initialized) return;
 
-        const SQL = await initSqlJs();
+        try {
+            const SQL = await initSqlJs({
+                // Use CDN for Wasm to ensure it works in serverless environments
+                locateFile: (file: string) => `https://sql.js.org/dist/${file}`
+            });
 
-        // Load existing database or create new one
-        if (existsSync(this.dbPath)) {
-            const buffer = readFileSync(this.dbPath);
-            this.db = new SQL.Database(buffer);
-        } else {
-            this.db = new SQL.Database();
+            // Load existing database or create new one
+            if (existsSync(this.dbPath)) {
+                try {
+                    const buffer = readFileSync(this.dbPath);
+                    this.db = new SQL.Database(buffer);
+                } catch (readError) {
+                    console.error('Failed to read database file, creating new one:', readError);
+                    this.db = new SQL.Database();
+                }
+            } else {
+                this.db = new SQL.Database();
+            }
+
+            // Create table if it doesn't exist
+            this.db.run(`
+                CREATE TABLE IF NOT EXISTS attacks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    threat_score INTEGER NOT NULL,
+                    analysis_result TEXT NOT NULL
+                )
+            `);
+
+            this.save();
+            this.initialized = true;
+        } catch (initError: any) {
+            console.error('Database initialization failed:', initError);
+            throw new Error(`Database Initialization Error: ${initError.message}`);
         }
-
-        // Create table if it doesn't exist
-        this.db.run(`
-      CREATE TABLE IF NOT EXISTS attacks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        timestamp TEXT NOT NULL,
-        type TEXT NOT NULL,
-        content TEXT NOT NULL,
-        threat_score INTEGER NOT NULL,
-        analysis_result TEXT NOT NULL
-      )
-    `);
-
-        this.save();
-        this.initialized = true;
     }
 
     private save() {
