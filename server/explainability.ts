@@ -1,5 +1,5 @@
-import { DetectionResult } from './detection-engine.js';
-import { ReasoningResult } from './reasoning-engine.js';
+import { DetectionResult } from './detection-engine';
+import { ReasoningResult } from './reasoning-engine';
 
 export interface Explanation {
     summary: string;
