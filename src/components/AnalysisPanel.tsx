@@ -44,13 +44,13 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
         setResult(null);
 
         try {
-            const response = await fetch('http://localhost:8000/analyze', {
+            const response = await fetch('/api/analyze', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    text: input,
+                    content: input,
                 }),
             });
 
@@ -100,7 +100,7 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
             }
         } catch (error) {
             console.error('Analysis error:', error);
-            alert('Failed to connect to the AI Security Agent (localhost:8000). Please ensure the Python backend is running.');
+            alert('Failed to connect to the AI Security Agent. Please ensure the backend is running.');
         } finally {
             setLoading(false);
         }

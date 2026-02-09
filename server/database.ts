@@ -21,7 +21,8 @@ class DatabaseManager {
     private initialized = false;
 
     constructor() {
-        this.dbPath = join(__dirname, '..', 'attacks.db');
+        // Vercel serverless environment has a read-only filesystem except for /tmp
+        this.dbPath = process.env.VERCEL ? '/tmp/attacks.db' : join(__dirname, '..', 'attacks.db');
     }
 
     async initialize() {
