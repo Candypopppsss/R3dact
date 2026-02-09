@@ -25,7 +25,7 @@ function App() {
                     fontSize: '3.5rem',
                     fontWeight: 800,
                     letterSpacing: '-0.05em',
-                    background: 'linear-gradient(to right, #f87171, #ef4444)',
+                    background: 'linear-gradient(to right, #ef4444, #7f1d1d)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     margin: 0

@@ -47,7 +47,7 @@ class ExplainabilityEngine {
         const primaryIntent = reasoning.attackerIntent[0]?.intent || 'malicious activity';
         const indicatorCount = detection.indicators.length;
 
-        return `⚠️ ${riskLevel} Risk Detected: This appears to be a ${reasoning.attackType} attempt. ` +
+        return `RISK DETECTED (${riskLevel}): This appears to be a ${reasoning.attackType} attempt. ` +
             `Identified ${indicatorCount} suspicious indicator${indicatorCount !== 1 ? 's' : ''} ` +
             `suggesting ${primaryIntent.toLowerCase()}.`;
     }
@@ -116,45 +116,45 @@ class ExplainabilityEngine {
         const recommendations: string[] = [];
 
         if (riskLevel === 'Critical' || riskLevel === 'High') {
-            recommendations.push('🛑 **DO NOT** interact with this content or click any links');
-            recommendations.push('🗑️ Delete this message immediately');
+            recommendations.push('SECURITY ALERT: DO NOT interact with this content or click any links');
+            recommendations.push('Immediate action required: Delete this message');
 
             if (detection.category === 'email') {
-                recommendations.push('📧 Report as phishing to your email provider');
-                recommendations.push('🔒 If you clicked any links, change your passwords immediately');
+                recommendations.push('Report as phishing to your email provider or IT security');
+                recommendations.push('If links were accessed, initiate password reset protocols immediately');
             }
 
             if (detection.indicators.some(i => i.type === 'Credential Request')) {
-                recommendations.push('⚠️ Never entered credentials? Good! If you did, change passwords NOW');
+                recommendations.push('System Warning: Do not provide credentials. If already provided, reset immediately.');
             }
         }
 
         if (riskLevel === 'Medium') {
-            recommendations.push('⚠️ Exercise extreme caution with this content');
-            recommendations.push('🔍 Verify the sender through official channels before responding');
-            recommendations.push('🚫 Do not click links or download attachments');
+            recommendations.push('Security Notice: Exercise extreme caution with this content');
+            recommendations.push('Verification Required: Confirm sender identity via official channels');
+            recommendations.push('Access Restricted: Do not click links or download attachments');
         }
 
         if (riskLevel === 'Low') {
-            recommendations.push('👀 Be cautious and verify the source independently');
-            recommendations.push('🔗 Hover over links to check actual destinations before clicking');
+            recommendations.push('Observation: Verify the source independently');
+            recommendations.push('Validation: Inspect link destinations (hover) before interaction');
         }
 
         // Specific recommendations based on attack type
         if (reasoning.attackerIntent.some(i => i.intent === 'Credential Theft')) {
-            recommendations.push('🔐 Enable two-factor authentication on all important accounts');
+            recommendations.push('Action Required: Enable two-factor authentication (2FA) immediately');
         }
 
         if (reasoning.attackerIntent.some(i => i.intent === 'Financial Fraud')) {
-            recommendations.push('💳 Monitor your bank statements for unauthorized transactions');
+            recommendations.push('Action Required: Monitor financial statements for unauthorized activity');
         }
 
         if (reasoning.vulnerabilities.some(v => v.trigger === 'Fear & Anxiety')) {
-            recommendations.push('🧘 Take a moment to verify - legitimate organizations don\'t create panic');
+            recommendations.push('Analysis Note: Legitimate organizations do not utilize panic-inducing tactics');
         }
 
         if (reasoning.vulnerabilities.some(v => v.trigger === 'Authority Bias')) {
-            recommendations.push('📞 Contact the organization directly using official contact information');
+            recommendations.push('Procedure: Contact the organization directly via official verified channels');
         }
 
         // General best practices

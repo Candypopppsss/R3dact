@@ -63,12 +63,12 @@ export default function ThreatCard({ result }: ThreatCardProps) {
     const getRiskGradient = (riskLevel: string) => {
         const level = riskLevel?.toLowerCase();
         switch (level) {
-            case 'critical': return 'linear-gradient(135deg, #dc2626, #991b1b)';
-            case 'high': return 'linear-gradient(135deg, #f59e0b, #d97706)';
-            case 'medium': return 'linear-gradient(135deg, #eab308, #ca8a04)';
-            case 'low': return 'linear-gradient(135deg, #3b82f6, #2563eb)';
-            case 'safe': return 'linear-gradient(135deg, #10b981, #059669)';
-            default: return 'linear-gradient(135deg, #6b7280, #4b5563)';
+            case 'critical': return 'linear-gradient(135deg, #ef4444, #7f1d1d)';
+            case 'high': return 'linear-gradient(135deg, #dc2626, #450a0a)';
+            case 'medium': return 'linear-gradient(135deg, #374151, #1f2937)';
+            case 'low': return 'linear-gradient(135deg, #1f2937, #111827)';
+            case 'safe': return 'linear-gradient(135deg, #0b0b0e, #050507)';
+            default: return 'linear-gradient(135deg, #1f2937, #0b0b0e)';
         }
     };
 
@@ -79,10 +79,10 @@ export default function ThreatCard({ result }: ThreatCardProps) {
     const formatSummary = (summary: string) => {
         if (!summary) return "";
         return summary
-            .replace(/### (.*?)(?:\n|\r\n|$)/g, '<h4 style="margin: 1.25rem 0 0.5rem 0; color: var(--accent-cyan); font-weight: 700;">$1</h4>')
+            .replace(/### (.*?)(?:\n|\r\n|$)/g, '<h4 style="margin: 1.25rem 0 0.5rem 0; color: var(--accent-red); font-weight: 700;">$1</h4>')
             .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--text-primary);">$1</strong>')
             .replace(/\*(.*?)\*/g, '<em style="color: var(--text-secondary);">$1</em>')
-            .replace(/• (.*?)(?:\n|\r\n|$)/g, '<div style="margin-bottom: 0.25rem;">• $1</div>');
+            .replace(/• (.*?)(?:\n|\r\n|$)/g, '<div style="margin-bottom: 0.25rem; color: var(--text-secondary);">• $1</div>');
     };
 
     return (
@@ -126,11 +126,11 @@ export default function ThreatCard({ result }: ThreatCardProps) {
             {explanation?.summary && (
                 <div style={{
                     padding: '1.25rem',
-                    background: 'rgba(6, 182, 212, 0.05)',
-                    borderLeft: '4px solid var(--accent-cyan)',
+                    background: 'rgba(239, 68, 68, 0.03)',
+                    borderLeft: '4px solid var(--accent-red)',
                     borderRadius: '0.5rem',
                     marginBottom: '1.5rem',
-                    border: '1px solid rgba(6, 182, 212, 0.1)'
+                    border: '1px solid rgba(255, 255, 255, 0.05)'
                 }}>
                     <div
                         style={{ margin: 0, fontSize: '1rem', lineHeight: 1.7, color: 'var(--text-secondary)' }}
@@ -142,7 +142,7 @@ export default function ThreatCard({ result }: ThreatCardProps) {
             {/* Attack Classification */}
             {reasoning?.attackType && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-cyan)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Attack Classification
                     </h3>
                     <div style={{
@@ -162,7 +162,7 @@ export default function ThreatCard({ result }: ThreatCardProps) {
             {/* Attacker Intent */}
             {reasoning?.attackerIntent && reasoning.attackerIntent.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Attacker Intent
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -178,11 +178,11 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                                 }}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                    <strong style={{ color: 'var(--accent-purple)' }}>{intent.intent}</strong>
+                                    <strong style={{ color: 'var(--accent-red)' }}>{intent.intent}</strong>
                                     <span style={{
                                         padding: '0.2rem 0.6rem',
-                                        background: 'rgba(168, 85, 247, 0.15)',
-                                        color: 'var(--accent-purple)',
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        color: 'var(--accent-red)',
                                         borderRadius: '0.5rem',
                                         fontSize: '0.75rem',
                                         fontWeight: '700'
@@ -202,7 +202,7 @@ export default function ThreatCard({ result }: ThreatCardProps) {
             {/* Psychological Tactics */}
             {reasoning?.vulnerabilities && reasoning.vulnerabilities.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-pink)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Psychological Tactics
                     </h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem' }}>
@@ -215,7 +215,7 @@ export default function ThreatCard({ result }: ThreatCardProps) {
                                     borderRadius: '0.75rem',
                                     border: '1px solid var(--border-color)',
                                     borderLeft: `4px solid ${vuln.severity === 'high' ? 'var(--accent-red)' :
-                                        vuln.severity === 'medium' ? 'var(--accent-yellow)' : 'var(--accent-cyan)'
+                                        vuln.severity === 'medium' ? 'var(--accent-yellow)' : 'var(--accent-gray)'
                                         }`
                                 }}
                             >
@@ -234,19 +234,19 @@ export default function ThreatCard({ result }: ThreatCardProps) {
             {/* Recommendations Section */}
             {explanation?.recommendations && explanation.recommendations.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: 'var(--accent-green)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                         Security Recommendations
                     </h3>
                     <div style={{
                         padding: '1rem',
-                        background: 'rgba(16, 185, 129, 0.05)',
+                        background: 'rgba(255, 255, 255, 0.02)',
                         borderRadius: '0.75rem',
-                        border: '1px solid rgba(16, 185, 129, 0.1)'
+                        border: '1px solid rgba(255, 255, 255, 0.05)'
                     }}>
                         <ul style={{ margin: 0, paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                             {explanation.recommendations.map((rec, idx) => (
                                 <li key={idx} style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                                    <div dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--accent-green);">$1</strong>') }} />
+                                    <div dangerouslySetInnerHTML={{ __html: rec.replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--accent-red);">$1</strong>') }} />
                                 </li>
                             ))}
                         </ul>
@@ -280,7 +280,7 @@ export default function ThreatCard({ result }: ThreatCardProps) {
 
                     {explanation?.technicalDetails?.map((detail, idx) => (
                         <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                            <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--accent-cyan)', textTransform: 'uppercase' }}>
+                            <h4 style={{ fontSize: '0.85rem', marginBottom: '0.75rem', color: 'var(--accent-red)', textTransform: 'uppercase' }}>
                                 {detail.category}
                             </h4>
                             <ul style={{ margin: 0, paddingLeft: '1.25rem', listStyleType: 'square' }}>

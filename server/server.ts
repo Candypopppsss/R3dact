@@ -44,11 +44,7 @@ app.post('/api/analyze', async (req, res) => {
                 type: detection.category,
                 content: content.substring(0, 500), // Store first 500 chars
                 threat_score: detection.threatScore,
-                analysis_result: JSON.stringify({
-                    attackType: reasoning.attackType,
-                    riskLevel: explanation.riskLevel,
-                    indicators: detection.indicators.length
-                })
+                analysis_result: JSON.stringify(result)
             });
         }
 
@@ -111,8 +107,8 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🛡️  AI Security Server running on http://localhost:${PORT}`);
-    console.log(`📊 API endpoints available at http://localhost:${PORT}/api`);
+    console.log(`AI Security Server running on http://localhost:${PORT}`);
+    console.log(`API endpoints available at http://localhost:${PORT}/api`);
 });
 
 export default app;

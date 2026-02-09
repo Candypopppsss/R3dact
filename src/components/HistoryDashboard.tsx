@@ -11,9 +11,24 @@ interface AttackRecord {
     content: string;
     threat_score: number;
     analysis_result?: {
-        attackType: string;
-        riskLevel: string;
-        indicators: number;
+        detection: {
+            threatScore: number;
+            isPhishing?: boolean;
+            category?: string;
+            indicators?: any[];
+        };
+        reasoning: {
+            attackType: string;
+            attackerIntent: Array<{ intent: string; confidence: number; reasoning: string }>;
+            vulnerabilities: Array<{ trigger: string; description: string; severity: 'high' | 'medium' | 'low' }>;
+        };
+        explanation: {
+            riskLevel: string;
+            summary: string;
+            recommendations?: string[];
+            technicalDetails?: Array<{ category: string; findings: string[] }>;
+        };
+        timestamp: string;
     };
 }
 
@@ -105,31 +120,28 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                     marginBottom: '2rem'
                 }}>
                     <div className="card" style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📊</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-cyan)' }}>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-red)' }}>
                             {stats.totalAttacks}
                         </div>
-                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.8rem' }}>
                             Total Threats Detected
                         </div>
                     </div>
 
                     <div className="card" style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>⚠️</div>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-yellow)' }}>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                             {stats.averageThreatScore}
                         </div>
-                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.8rem' }}>
                             Average Threat Score
                         </div>
                     </div>
 
                     <div className="card" style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🚨</div>
                         <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-red)' }}>
                             {stats.highThreatCount}
                         </div>
-                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                        <div style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.8rem' }}>
                             High-Risk Attacks
                         </div>
                     </div>
@@ -139,7 +151,6 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
             {/* Attack History */}
             <div className="card">
                 <div className="card-header">
-                    <span className="card-icon">📜</span>
                     <h2 className="card-title">Attack History</h2>
                 </div>
 
@@ -149,7 +160,6 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                         padding: '3rem',
                         color: 'var(--text-secondary)'
                     }}>
-                        <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔍</div>
                         <p style={{ fontSize: '1.2rem' }}>No threats detected yet</p>
                         <p>Analyze some content to build your threat history</p>
                     </div>
@@ -178,8 +188,8 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             gap: '0.75rem',
                                             marginBottom: '0.75rem'
                                         }}>
-                                            <span className={getRiskBadgeClass(attack.analysis_result?.riskLevel)}>
-                                                {attack.analysis_result?.riskLevel ?? 'Unknown'}
+                                            <span className={getRiskBadgeClass(attack.analysis_result?.explanation?.riskLevel || (attack.analysis_result as any)?.riskLevel)}>
+                                                {attack.analysis_result?.explanation?.riskLevel || (attack.analysis_result as any)?.riskLevel || 'Unknown'}
                                             </span>
                                             <span style={{
                                                 padding: '0.25rem 0.75rem',
@@ -202,9 +212,9 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             fontSize: '1.05rem',
                                             fontWeight: '600',
                                             marginBottom: '0.5rem',
-                                            color: 'var(--accent-purple)'
+                                            color: 'var(--text-primary)'
                                         }}>
-                                            {attack.analysis_result?.attackType ?? 'Generic Attack'}
+                                            {attack.analysis_result?.reasoning?.attackType ?? 'Generic Attack'}
                                         </div>
 
                                         <div style={{
@@ -227,7 +237,10 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             fontSize: '0.875rem',
                                             color: 'var(--text-tertiary)'
                                         }}>
-                                            {attack.analysis_result?.indicators ?? 0} indicator{(attack.analysis_result?.indicators ?? 0) !== 1 ? 's' : ''} detected
+                                            {(() => {
+                                                const count = attack.analysis_result?.detection?.indicators?.length || (attack.analysis_result as any)?.indicators || 0;
+                                                return `${count} indicator${count !== 1 ? 's' : ''} detected`;
+                                            })()}
                                         </div>
                                     </div>
 
@@ -239,10 +252,10 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                     }}>
                                         <div style={{
                                             background: attack.threat_score >= 70
-                                                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                                                ? 'linear-gradient(135deg, #ef4444, #7f1d1d)'
                                                 : attack.threat_score >= 40
-                                                    ? 'linear-gradient(135deg, #f59e0b, #d97706)'
-                                                    : 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                                    ? 'linear-gradient(135deg, #dc2626, #450a0a)'
+                                                    : 'linear-gradient(135deg, #374151, #1f2937)',
                                             padding: '1rem',
                                             borderRadius: '0.75rem',
                                             textAlign: 'center',
@@ -261,7 +274,7 @@ export default function HistoryDashboard({ refreshTrigger }: HistoryDashboardPro
                                             onClick={() => handleDelete(attack.id)}
                                             style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
                                         >
-                                            🗑️ Delete
+                                            Delete
                                         </button>
                                     </div>
                                 </div>

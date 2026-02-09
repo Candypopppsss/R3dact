@@ -58,42 +58,9 @@ export default function AnalysisPanel({ onAnalysisComplete }: AnalysisPanelProps
                 throw new Error('Analysis failed');
             }
 
-            const data = await response.json();
+            const data: AnalysisResult = await response.json();
 
-            // Map Python backend response to React frontend format
-            const mappedResult: AnalysisResult = {
-                detection: {
-                    threatScore: data.risk_score
-                },
-                reasoning: {
-                    attackType: data.attacker_persona,
-                    attackerIntent: [
-                        { intent: data.attacker_persona, confidence: 95, reasoning: `The agent has identified the attacker as a ${data.attacker_persona}.` }
-                    ],
-                    vulnerabilities: data.vulnerability_assessment.triggers.map((t: string) => ({
-                        trigger: t,
-                        description: `This attack leverages ${t} to manipulate human behavior.`,
-                        severity: data.vulnerability_assessment.rating.toLowerCase() as 'high' | 'medium' | 'low'
-                    }))
-                },
-                explanation: {
-                    riskLevel: (data.classification === 'Phishing' ? 'Critical' :
-                        data.classification === 'Suspicious' ? 'High' : 'Safe') as 'Critical' | 'High' | 'Medium' | 'Low' | 'Safe',
-                    summary: data.explanation,
-                    recommendations: [
-                        "Do not interact with or click any links in this content.",
-                        "Verify the sender's identity through official channels.",
-                        "Report this incident to your security department."
-                    ],
-                    technicalDetails: [
-                        { category: "Agent Classification", findings: [`Classification: ${data.classification}`] },
-                        { category: "Human Vulnerability", findings: [`Rating: ${data.vulnerability_assessment.rating}`, `Score: ${data.vulnerability_assessment.score}%`] }
-                    ]
-                },
-                timestamp: data.timestamp
-            };
-
-            setResult(mappedResult);
+            setResult(data);
 
             if (onAnalysisComplete) {
                 onAnalysisComplete();
